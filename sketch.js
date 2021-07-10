@@ -12,7 +12,7 @@ let pastFrame;
 
 function preload() {
     // load the shader
-    theShader = loadShader('shader.vert', 'gol_color_xor.frag');
+    theShader = loadShader('shader.vert', 'mnca_1.frag');
 }
 
 function setup() {
