@@ -19,6 +19,7 @@ function setup() {
     // shaders require WEBGL mode to work
     canvas = createCanvas(windowWidth, windowHeight, WEBGL);
     noStroke();
+    // frameRate(1);
 
     // the pastFrame layer doesn't need to be WEBGL
     pastFrame = createGraphics(width, height);

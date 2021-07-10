@@ -85,22 +85,22 @@ void main() {
 
             float alive = currentPixel;
 
-            if( NEIGHBORHOOD_AVG[0] >= 0.210 &&  NEIGHBORHOOD_AVG[0] <= 0.220 ) {
+            if( NEIGHBORHOOD_AVG[0] >= 0.185 &&  NEIGHBORHOOD_AVG[0] <= 0.2 ) {
                 alive = 1.0;
             }
-            if( NEIGHBORHOOD_AVG[0] >= 0.350 &&  NEIGHBORHOOD_AVG[0] <= 0.500 ) {
+            if( NEIGHBORHOOD_AVG[0] >= 0.343 &&  NEIGHBORHOOD_AVG[0] <= 0.58 ) {
                 alive = 0.0;
             }
-            if( NEIGHBORHOOD_AVG[0] >= 0.750 &&  NEIGHBORHOOD_AVG[0] <= 0.850 ) {
+            if( NEIGHBORHOOD_AVG[0] >= 0.75 &&  NEIGHBORHOOD_AVG[0] <= 0.850 ) {
                 alive = 0.0;
             }
-            if( NEIGHBORHOOD_AVG[1] >= 0.100 &&  NEIGHBORHOOD_AVG[1] <= 0.280 ) {
+            if( NEIGHBORHOOD_AVG[1] >= 0.15 &&  NEIGHBORHOOD_AVG[1] <= 0.28 ) {
                 alive = 0.0;
             }
-            if( NEIGHBORHOOD_AVG[1] >= 0.430 &&  NEIGHBORHOOD_AVG[1] <= 0.550 ) {
+            if( NEIGHBORHOOD_AVG[1] >= 0.45 &&  NEIGHBORHOOD_AVG[1] <= 0.68 ) {
                 alive = 1.0;
             }
-            if( NEIGHBORHOOD_AVG[0] >= 0.120 &&  NEIGHBORHOOD_AVG[0] <= 0.150 ) {
+            if( NEIGHBORHOOD_AVG[0] >= 0.15 &&  NEIGHBORHOOD_AVG[0] <= 0.18 ) {
                 alive = 0.0;
             }
 
