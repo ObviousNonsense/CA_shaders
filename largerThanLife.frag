@@ -1,4 +1,4 @@
-#define brushSize 20.0
+#define brushSize 100.0
 
 #define T(i, j)texture2D(u_pastFrame, (position + vec2(i, j) * vec2(1.0 / u_resolution))).r
 #define N(i, j)float(T(i, j) > 0.0)

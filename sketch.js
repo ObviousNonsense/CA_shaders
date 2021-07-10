@@ -12,7 +12,7 @@ let pastFrame;
 
 function preload() {
     // load the shader
-    theShader = loadShader('shader.vert', 'largerThanLife.frag');
+    theShader = loadShader('shader.vert', 'gol_color_xor.frag');
 }
 
 function setup() {
