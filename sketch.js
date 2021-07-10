@@ -12,7 +12,7 @@ let pastFrame;
 
 function preload() {
     // load the shader
-    theShader = loadShader('effect.vert', 'effect.frag');
+    theShader = loadShader('shader.vert', 'largerThanLife.frag');
 }
 
 function setup() {

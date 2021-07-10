@@ -1,6 +1,5 @@
-# Game of Life with WebGL
-
-[obviousnonsense.github.io/gol_shader/]()
+# Multiple Neighbourhood Cellular Automata
+<!-- [obviousnonsense.github.io/gol_shader/]() -->
 
 Conway's game of life calculated on your GPU using shaders.
 
