@@ -17,6 +17,7 @@ uniform float u_time;
 uniform vec2 u_mouse;
 uniform bool u_mousePressed;
 uniform float u_randomSeed;
+uniform float u_brushSize;
 
 float snoise(in vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453 * u_randomSeed);
@@ -32,7 +33,7 @@ void main() {
     // float currentPixel = texture2D(u_pastFrame, position).r;
 
     if (u_frame > 5) {
-        if (distance(u_mouse, gl_FragCoord.xy) < brushSize && u_mousePressed) {
+        if (distance(u_mouse, gl_FragCoord.xy) < u_brushSize && u_mousePressed) {
             currentPixel = snoise(vTexCoord) > 0.8 ? 1.0 : 0.0;
         }
         else {

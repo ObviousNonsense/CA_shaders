@@ -3,16 +3,26 @@
 // https://www.shadertoy.com/view/ld3Sz7
 // https://github.com/aferriss/p5jsShaderExamples
 // https://itp-xstory.github.io/p5js-shaders/#/./docs/examples/shadertoy
+// https://slackermanz.com/understanding-multiple-neighborhood-cellular-automata/
 
 // the shader variable
 let theShader;
 let canvas;
 let pastFrame;
-// let gl;
+let settings;
+let shaderList;
+let brushSize = 50.0;
 
 function preload() {
     // load the shader
-    theShader = loadShader('shader.vert', 'mnca_1.frag');
+    theShader = loadShader('shader.vert', 'gol.frag');
+    shaderList = {
+        'Game Of Life': loadShader('shader.vert', 'gol.frag'),
+        '3-Channel Game Of Life': loadShader('shader.vert', 'gol_color_xor.frag'),
+        'Larger Than Life': loadShader('shader.vert', 'largerThanLife.frag'),
+        'Multiple Neighbourhood CA 1': loadShader('shader.vert', 'mnca_1.frag'),
+        'Multiple Neighbourhood CA 2': loadShader('shader.vert', 'mnca_2.frag'),
+    }
 }
 
 function setup() {
@@ -26,6 +36,15 @@ function setup() {
 
     // let gl = canvas.GL;
     // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    settings = QuickSettings.create(0, 0, 'Settings');
+    settings.addDropDown('Shader List', Object.keys(shaderList), setShader)
+    settings.addButton('Random Fill', function() {frameCount = 0})
+    settings.addRange('Brush Size', 1.0, 500.0, brushSize, 1.0, function(x) {brushSize = x})
+}
+
+function setShader(newShader) {
+    theShader = shaderList[newShader.value];
 }
 
 function draw() {
@@ -40,6 +59,7 @@ function draw() {
         height * pixelDensity(), height * pixelDensity(), 0)]);
     theShader.setUniform("u_mousePressed", mouseIsPressed);
     theShader.setUniform("u_randomSeed", random(0.8, 1.2));
+    theShader.setUniform("u_brushSize", brushSize);
 
     // rect gives us some geometry on the screen
     // scale(5)

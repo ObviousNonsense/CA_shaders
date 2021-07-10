@@ -1,6 +1,6 @@
 // https://slackermanz.com/understanding-multiple-neighborhood-cellular-automata/#Implementing
 
-#define brushSize 50.0
+// #define brushSize 50.0
 
 #define T(i, j) texture2D(u_pastFrame, (position + vec2(i, j) * vec2(1.0 / u_resolution)))[3]
 #define N(i, j) float(T(i, j) > 0.0)
@@ -20,6 +20,7 @@ uniform float u_time;
 uniform vec2 u_mouse;
 uniform bool u_mousePressed;
 uniform float u_randomSeed;
+uniform float u_brushSize;
 
 float snoise(vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453 * u_randomSeed);
@@ -68,7 +69,7 @@ void main() {
     vec4 nextPixel = vec4(currentPixel);
 
     if (u_frame > 5) {
-        if (distance(u_mouse, gl_FragCoord.xy) < brushSize && u_mousePressed) {
+        if (distance(u_mouse, gl_FragCoord.xy) < u_brushSize && u_mousePressed) {
             nextPixel = vec4(snoise(vTexCoord) > 0.5 ? 1.0 : 0.0);
         }
         else {
