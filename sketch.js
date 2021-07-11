@@ -13,6 +13,20 @@ let pastFrame;
 let settings;
 let shaderList;
 let brushSize = 50.0;
+let radiuses = [
+    5, 7,
+    1, 3
+];
+
+// REGION, MIN AVG, MAX AVG, OUTPUT
+let rules = [
+    0.0, 0.21, 0.22, 1.0,
+    0.0, 0.35, 0.5, 0.0,
+    0.0, 0.75, 0.85, 0.0,
+    1.0, 0.1, 0.28, 0.0,
+    1.0, 0.43, 0.55, 1.0,
+    0.0, 0.12, 0.15, 0.0,
+]
 
 function preload() {
     // load the shader
@@ -50,6 +64,7 @@ function draw() {
     // shader() sets the active shader with our shader
     shader(theShader);
 
+
     theShader.setUniform('u_pastFrame', pastFrame);
     theShader.setUniform('u_resolution', [width * pixelDensity(), height * pixelDensity()]);
     theShader.setUniform('u_frame', frameCount)
@@ -59,6 +74,8 @@ function draw() {
     theShader.setUniform("u_mousePressed", mouseIsPressed);
     theShader.setUniform("u_randomSeed", random(0.8, 1.2));
     theShader.setUniform("u_brushSize", brushSize);
+    theShader.setUniform("u_rulesArray", rules);
+    theShader.setUniform("u_radiusArray", radiuses);
 
     // rect gives us some geometry on the screen
     // scale(5)
