@@ -5,6 +5,7 @@
 // https://itp-xstory.github.io/p5js-shaders/#/./docs/examples/shadertoy
 // https://slackermanz.com/understanding-multiple-neighborhood-cellular-automata/
 
+
 // the shader variable
 let theShader;
 let canvas;
@@ -15,36 +16,34 @@ let brushSize = 50.0;
 
 function preload() {
     // load the shader
-    theShader = loadShader('shader.vert', 'gol.frag');
+    // theShader = loadShader('shader.vert', 'gol.frag');
     shaderList = {
+        'Multiple Neighbourhood CA Custom': loadShader('shader.vert', 'mnca_custom.frag'),
         'Game Of Life': loadShader('shader.vert', 'gol.frag'),
         '3-Channel Game Of Life': loadShader('shader.vert', 'gol_color_xor.frag'),
         'Larger Than Life': loadShader('shader.vert', 'largerThanLife.frag'),
         'Multiple Neighbourhood CA 1': loadShader('shader.vert', 'mnca_1.frag'),
         'Multiple Neighbourhood CA 2': loadShader('shader.vert', 'mnca_2.frag'),
     }
+    setShader(Object.keys(shaderList)[0])
 }
 
 function setup() {
     // shaders require WEBGL mode to work
     canvas = createCanvas(windowWidth, windowHeight, WEBGL);
     noStroke();
-    // frameRate(1);
 
     // the pastFrame layer doesn't need to be WEBGL
     pastFrame = createGraphics(width, height);
 
-    // let gl = canvas.GL;
-    // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    settings = QuickSettings.create(0, 0, 'Settings');
-    settings.addDropDown('Shader List', Object.keys(shaderList), setShader)
-    settings.addButton('Random Fill', function() {frameCount = 0})
-    settings.addRange('Brush Size', 1.0, 500.0, brushSize, 1.0, function(x) {brushSize = x})
+    settings = QuickSettings.create(0, 0, 'Settings')
+        .addDropDown('Shader List', Object.keys(shaderList), function(s) {setShader(s.value)})
+        .addButton('Random Fill', function() {frameCount = 0})
+        .addRange('Brush Size', 1.0, 500.0, brushSize, 1.0, function(x) {brushSize = x})
 }
 
 function setShader(newShader) {
-    theShader = shaderList[newShader.value];
+    theShader = shaderList[newShader];
 }
 
 function draw() {
