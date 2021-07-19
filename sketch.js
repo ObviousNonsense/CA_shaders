@@ -5,7 +5,7 @@
 // https://itp-xstory.github.io/p5js-shaders/#/./docs/examples/shadertoy
 // https://slackermanz.com/understanding-multiple-neighborhood-cellular-automata/
 
-const MAX_DIAMETER = 15; // MUST BE AN ODD NUMBER
+const MAX_DIAMETER = 21; // MUST BE AN ODD NUMBER
 const MAX_RULES = 10;
 const MAX_REGIONS = 2;
 
@@ -23,6 +23,16 @@ let radiuses = [
 let numRegions = 2;
 
 // REGION, MIN AVG, MAX AVG, OUTPUT
+
+// let rules = [
+//     0.0, 0.185, 0.200, 1.0,
+//     0.0, 0.343, 0.580, 0.0,
+//     0.0, 0.750, 0.850, 0.0,
+//     1.0, 0.150, 0.280, 0.0,
+//     1.0, 0.445, 0.680, 1.0,
+//     0.0, 0.150, 0.180, 0.0,
+// ]
+
 let rules = [
     0.0, 0.21, 0.22, 1.0,
     0.0, 0.35, 0.5, 0.0,
@@ -79,21 +89,7 @@ function setup() {
     }
 
     let regionsCopy = regions.slice();
-    while(regionsCopy.length) regionsSquare.push(regionsCopy.splice(0,15));
-
-    // for (let reg = 0; reg < numRegions; reg++){
-    //     for (let i = -radius; i < radius; i++) {
-    //         for (let j = -radius; j < radius; j++) {
-    //             let dist = sqrt(i*i + j*j);
-    //             if (dist >= radiuses[reg * 2] && dist <= (radiuses[reg * 2 + 1])) {
-    //                 regions.push(true);
-    //             }
-    //             else {
-    //                 regions.push(false);
-    //             }
-    //         }
-    //     }
-    // }
+    while(regionsCopy.length) regionsSquare.push(regionsCopy.splice(0, MAX_DIAMETER));
 
 }
 
@@ -118,7 +114,6 @@ function draw() {
     theShader.setUniform("u_rulesArray", rules);
     // theShader.setUniform("u_radiusArray", radiuses);
     theShader.setUniform("u_regionsArray", regions);
-    theShader.setUniform("u_numRegions", numRegions);
 
     // rect gives us some geometry on the screen
     // scale(5)
