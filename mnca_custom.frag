@@ -4,21 +4,16 @@
 
 #define T(i, j)texture2D(u_pastFrame, (position + vec2(i, j) * vec2(1.0 / u_resolution)))[3]
 #define N(i, j)float(T(i, j) > 0.0)
-#define MAX_DIAMETER 50
+#define MAX_DIAMETER 15 // MUST BE AN ODD NUMBER
 #define MAX_RULES 10
 #define MAX_REGIONS 2
 
-precision mediump float;
-precision mediump int;
+precision highp float;
+precision highp int;
 
 // grab texcoords from the vertex shader
 varying vec2 vTexCoord;
 
-// struct Rule {
-    //     float minAvg;
-    //     float maxAvg;
-    //     float output;
-// }
 
 // our textures coming from p5
 uniform sampler2D u_pastFrame;
@@ -30,7 +25,9 @@ uniform bool u_mousePressed;
 uniform float u_randomSeed;
 uniform float u_brushSize;
 uniform vec4 u_rulesArray[MAX_RULES];
-uniform ivec2 u_radiusArray[MAX_REGIONS];
+// uniform ivec2 u_radiusArray[MAX_REGIONS];
+uniform float u_regionsArray[MAX_DIAMETER * MAX_DIAMETER];
+uniform int u_numRegions;
 
 float snoise(vec2 co) {
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453 * u_randomSeed);
@@ -45,17 +42,17 @@ vec2 checkRing(ivec2 radius, vec2 center) {
     float sum = 0.0;
     int count = 0;
 
-    for(int i = 0; i <= MAX_DIAMETER; i ++ ) {
+    for(int i = 0; i <= MAX_DIAMETER; i++ ) {
         int x = i - radius[1];
         if (x > radius[1]) {
             break;
         }
-        for(int j = 0; j <= MAX_DIAMETER; j ++ ) {
+        for(int j = 0; j <= MAX_DIAMETER; j++ ) {
             int y = j - radius[1];
             if (y > radius[1]) {
                 break;
             }
-            dist = floor(sqrt(float(x * x + y*y)) + 0.5);
+            dist = floor(sqrt(float(x * x + y * y)) + 0.5);
             if (dist <= float(radius[1])&& dist >= float(radius[0])) {
                 count ++ ;
                 sum += checkCell(x, y, center);
@@ -64,6 +61,120 @@ vec2 checkRing(ivec2 radius, vec2 center) {
     }
 
     return vec2(sum, count);
+}
+
+// vec2 checkRegion(int region, vec2 center) {
+//     float sum = 0.0;
+//     int count = 0;
+
+//     int radius = (MAX_DIAMETER - 1) / 2;
+
+//     for (int n = 0; n < MAX_REGIONS * MAX_DIAMETER * MAX_DIAMETER; n++) {
+//         int reg = int(floor(float(n) / float(MAX_DIAMETER * MAX_DIAMETER)));
+//         if (reg == region && u_regionsArray[n]) {
+//             int ind = n - reg * MAX_DIAMETER * MAX_DIAMETER;
+
+//             int j = int(mod(float(n), float(MAX_DIAMETER)));
+//             int y = j - radius;
+
+//             int i = (ind - j) / MAX_DIAMETER;
+//             int x = i - radius;
+
+//             count++;
+//             sum += checkCell(x, y, center);
+//         }
+//         else if (reg >= u_numRegions) {
+//             break;
+//         }
+//     }
+
+//     return vec2(sum, count);
+
+//     // for (int reg = 0; reg < MAX_REGIONS; reg++){
+//     //     if (reg == region) {
+//     //         // int region_index = reg * MAX_DIAMETER * MAX_DIAMETER;
+//     //         for (int i = 0; i <= MAX_DIAMETER; i++) {
+//     //             int i_index = i * MAX_DIAMETER;
+//     //             int x = i - radius;
+//     //             for (int j = 0; j <= MAX_DIAMETER; j++) {
+//     //                 if (u_regionsArray[reg * MAX_DIAMETER * MAX_DIAMETER + i_index + j]) {
+//     //                     count++;
+//     //                     int y = j - radius;
+//     //                     sum += checkCell(x, y, center);
+//     //                 }
+//     //             }
+//     //         }
+//     //     }
+//     // }
+
+// }
+
+void checkAllRegions(inout float neighborhood_avg[MAX_REGIONS], vec2 center) {
+    float sum[MAX_REGIONS];
+    int count[MAX_REGIONS];
+
+    // Initialize sum and count to 0
+    for (int i = 0; i < MAX_REGIONS; i++) {
+        sum[i] = 0.0;
+        count[i] = 0;
+    }
+
+    // MAX_DIAMETER has to be odd for this to work
+    int radius = (MAX_DIAMETER - 1) / 2;
+
+    // Sweep through the regions array
+    for (int i = 0; i <= MAX_DIAMETER; i++) {
+        int x = i - radius;
+        for (int j = 0; j <= MAX_DIAMETER; j++) {
+            int y = j - radius;
+
+            // Region definitions are binary-encoded. Region 0 is in place 0, etc
+            // Start with the current number in the array
+            float remainder = u_regionsArray[i * MAX_DIAMETER + j];
+            for (int reg = 0; reg < MAX_REGIONS; reg++) {
+                // If the number is odd, it's in the region
+                if (mod(remainder, 2.0) != 0.0) {
+                    // So increment the count and check that cell
+                    count[reg]++;
+                    sum[reg] += checkCell(x, y, center);
+                    // Remove the odd part of the number, then divide by 2 so we can check the next
+                    remainder -= 1.0;
+                }
+                remainder /= 2.0;
+
+                // Probably not necessary, but just in case
+                if (remainder <= 0.0) {
+                    break;
+                }
+            }
+        }
+    }
+
+    // Return the average number of alive cells in the region
+    for (int i = 0; i < MAX_REGIONS; i++) {
+        neighborhood_avg[i] = sum[i] / float(count[i]);
+    }
+}
+
+float applyRules(float currentPixel, float neighborhood_avg[MAX_REGIONS]) {
+    float alive = currentPixel;
+
+    for(int i = 0; i < MAX_RULES; i ++ ) {
+        vec3 rule = u_rulesArray[i].yzw;
+        if (rule.x == 0.0 && rule.y == 0.0) {
+            break;
+        }
+        int region = int(u_rulesArray[i].x);
+        for (int n = 0; n < MAX_REGIONS; n++) {
+            if (n == region) {
+                if (neighborhood_avg[n] >= rule.x && neighborhood_avg[n] <= rule.y) {
+                    alive = rule.z;
+                }
+            }
+        }
+    }
+
+    return alive;
 }
 
 void main() {
@@ -83,34 +194,30 @@ void main() {
         }
         else {
 
-            float NEIGHBORHOOD_AVG[MAX_REGIONS];
+            float neighborhood_avg[MAX_REGIONS];
 
-            for(int i = 0; i < MAX_REGIONS; i ++ ) {
-                if (u_radiusArray[i].x == u_radiusArray[i].y) {
-                    break;
-                }
-                vec2 ringValues = checkRing(u_radiusArray[i], position);
-                NEIGHBORHOOD_AVG[i] = ringValues.x / ringValues.y;
-            }
+            checkAllRegions(neighborhood_avg, position);
 
-            float alive = currentPixel;
+            // for(int i = 0; i < MAX_REGIONS; i ++ ) {
+            //     if (u_radiusArray[i].x == u_radiusArray[i].y) {
+            //         break;
+            //     }
+            //     vec2 ringValues = checkRing(u_radiusArray[i], position);
+            //     neighborhood_avg[i] = ringValues.x / ringValues.y;
+            // }
 
-            for(int i = 0; i < MAX_RULES; i ++ ) {
-                vec3 rule = u_rulesArray[i].yzw;
-                if (rule.x == 0.0 && rule.y == 0.0) {
-                    break;
-                }
-                int region = int(u_rulesArray[i].x);
-                for (int n = 0; n < MAX_REGIONS; n++) {
-                    if (n == region) {
-                        if (NEIGHBORHOOD_AVG[n] >= rule.x && NEIGHBORHOOD_AVG[n] <= rule.y) {
-                            alive = rule.z;
-                        }
-                    }
-                }
-            }
+            // for(int i = 0; i < MAX_REGIONS; i ++ ) {
+            //     if (i >= u_numRegions) {
+            //         break;
+            //     }
+            //     vec2 regionValues = checkRegion(i, position);
+            //     neighborhood_avg[i] = regionValues.x / regionValues.y;
+            // }
 
-            nextPixel = vec4(1.0 - NEIGHBORHOOD_AVG[0], 0.7, 1.0 - NEIGHBORHOOD_AVG[1], alive);
+            float alive = applyRules(currentPixel, neighborhood_avg);
+
+            nextPixel = vec4(1.0 - neighborhood_avg[0], 0.7, 1.0 - neighborhood_avg[1], alive);
+            // nextPixel = vec4(vec2(1.0), neighborhood_avg[1], alive);
         }
     }
     else {

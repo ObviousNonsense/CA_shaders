@@ -5,6 +5,9 @@
 // https://itp-xstory.github.io/p5js-shaders/#/./docs/examples/shadertoy
 // https://slackermanz.com/understanding-multiple-neighborhood-cellular-automata/
 
+const MAX_DIAMETER = 15; // MUST BE AN ODD NUMBER
+const MAX_RULES = 10;
+const MAX_REGIONS = 2;
 
 // the shader variable
 let theShader;
@@ -14,9 +17,10 @@ let settings;
 let shaderList;
 let brushSize = 50.0;
 let radiuses = [
-    5, 7,
-    1, 3
+    5, 7.3,
+    1, 3.2
 ];
+let numRegions = 2;
 
 // REGION, MIN AVG, MAX AVG, OUTPUT
 let rules = [
@@ -27,6 +31,9 @@ let rules = [
     1.0, 0.43, 0.55, 1.0,
     0.0, 0.12, 0.15, 0.0,
 ]
+
+let regions = [];
+let regionsSquare = [];
 
 function preload() {
     // load the shader
@@ -54,6 +61,40 @@ function setup() {
         .addDropDown('Shader List', Object.keys(shaderList), function(s) {setShader(s.value)})
         .addButton('Random Fill', function() {frameCount = 0})
         .addRange('Brush Size', 1.0, 500.0, brushSize, 1.0, function(x) {brushSize = x})
+
+    // Define some circular regions
+    let radius = (MAX_DIAMETER-1)/2;
+
+    for (let i = -radius; i <= radius; i++) {
+        for (let j = -radius; j <= radius; j++) {
+            let dist = sqrt(i*i + j*j);
+            let x = 0;
+            for (let reg = 0; reg < numRegions; reg++){
+                if (dist >= radiuses[reg * 2] && dist <= (radiuses[reg * 2 + 1])) {
+                    x += Math.pow(2, reg);
+                }
+            }
+            regions.push(x);
+        }
+    }
+
+    let regionsCopy = regions.slice();
+    while(regionsCopy.length) regionsSquare.push(regionsCopy.splice(0,15));
+
+    // for (let reg = 0; reg < numRegions; reg++){
+    //     for (let i = -radius; i < radius; i++) {
+    //         for (let j = -radius; j < radius; j++) {
+    //             let dist = sqrt(i*i + j*j);
+    //             if (dist >= radiuses[reg * 2] && dist <= (radiuses[reg * 2 + 1])) {
+    //                 regions.push(true);
+    //             }
+    //             else {
+    //                 regions.push(false);
+    //             }
+    //         }
+    //     }
+    // }
+
 }
 
 function setShader(newShader) {
@@ -75,7 +116,9 @@ function draw() {
     theShader.setUniform("u_randomSeed", random(0.8, 1.2));
     theShader.setUniform("u_brushSize", brushSize);
     theShader.setUniform("u_rulesArray", rules);
-    theShader.setUniform("u_radiusArray", radiuses);
+    // theShader.setUniform("u_radiusArray", radiuses);
+    theShader.setUniform("u_regionsArray", regions);
+    theShader.setUniform("u_numRegions", numRegions);
 
     // rect gives us some geometry on the screen
     // scale(5)
